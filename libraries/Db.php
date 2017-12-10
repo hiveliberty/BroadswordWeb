@@ -1,11 +1,11 @@
 <?php
 
-function insertUser($db, $user, $pass, $dbName, $characterID, $corporationID, $allianceID, $authString, $active)
+function insertUser($db, $user, $pass, $dbName, $eveName, $characterID, $corporationID, $allianceID, $discordID, $pending)
 {
 
     $conn = new mysqli($db, $user, $pass, $dbName);
 
-    $sql = "INSERT INTO pendingUsers (characterID, corporationID, allianceID, authString, active) VALUES ('$characterID','$corporationID','$allianceID','$authString','$active')";
+    $sql = "REPLACE INTO authUsers (eveName, characterID, corporationID, allianceID, discordID, pending) VALUES ('$eveName','$characterID','$corporationID','$allianceID','$discordID','$pending')";
 
     if ($conn->query($sql) === TRUE) {
         return null;
@@ -14,12 +14,12 @@ function insertUser($db, $user, $pass, $dbName, $characterID, $corporationID, $a
     }
 }
 
-function insertUser2($db, $user, $pass, $dbName, $characterID, $corporationID, $allianceID, $discordID, $active)
+function insertToken($db, $user, $pass, $dbName, $characterID, $accessToken, $refreshToken, $updatedOn)
 {
 
     $conn = new mysqli($db, $user, $pass, $dbName);
 
-    $sql = "INSERT INTO doAuthorize (characterID, corporationID, allianceID, discordID, active) VALUES ('$characterID','$corporationID','$allianceID','$discordID','$active')";
+    $sql = "REPLACE INTO tokenStorage (characterID, accessToken, refreshToken, updatedOn) VALUES ('$characterID','$accessToken','$refreshToken', '$updatedOn')";
 
     if ($conn->query($sql) === TRUE) {
         return null;
