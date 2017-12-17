@@ -47,6 +47,7 @@ $app->get("/auth-evesso/", function() use ($app, $config) {
     $characterID = $data->CharacterID;
     $characterData = json_decode(json_encode(new SimpleXMLElement(getData("https://api.eveonline.com/eve/CharacterInfo.xml.aspx?characterID={$characterID}"))));
     $corporationID = $characterData->result->corporationID;
+	$characterName = $characterData->result->characterName;
     if (!isset($characterData->result->allianceID)) { $allianceID = 1; } else { $allianceID = $characterData->result->allianceID; }
 
     $inviteLink = $config["discord"]["inviteLink"];
@@ -55,11 +56,11 @@ $app->get("/auth-evesso/", function() use ($app, $config) {
     //$authString = uniqid();
 	
 	// Set active to yes
-	$active = '1';
+	$pending = 'yes';
 
 	//insertUser($config["db"]["url"], $config["db"]["user"], $config["db"]["pass"], $config["db"]["dbname"], $characterID, $corporationID, $allianceID, $authString, $active);
 	
-	insertUser2($config["db"]["url"], $config["db"]["user"], $config["db"]["pass"], $config["db"]["dbname"], $characterID, $corporationID, $allianceID, $discordID, $active);
+	insertUser($config["db"]["url"], $config["db"]["user"], $config["db"]["pass"], $config["db"]["dbname"], $characterName, $characterID, $corporationID, $allianceID, $discordID, $pending);
 	
 	unset($_SESSION['discordID']);
 	
@@ -90,6 +91,38 @@ $app->get("/auth-discord/", function() use ($app, $config) {
 	$invite = $user->acceptInvite($config["discord"]["inviteLink"]);
 
     $app->render("evesso.twig", array("crestURL" => "https://login.eveonline.com/oauth/authorize?response_type=code&redirect_uri=" . $config['sso']['callbackURL'] . "&client_id=" . $config['sso']['clientID'] . "&scope=publicData" . "&state=" . $discordID, "discordID" => $discordID));
+});
+
+$app->get("/token/", function() use ($app, $config) {
+    $app->render("index-token.twig", array("crestURL" => "https://login.eveonline.com/oauth/authorize?response_type=code&redirect_uri=" . $config['sso-token']['callbackURL'] . "&client_id=" . $config['sso-token']['clientID'] . "&scope=publicData esi-mail.read_mail.v1 esi-characters.read_notifications.v1"));
+});
+
+$app->get("/auth-token/", function() use ($app, $config) {
+    $code = $app->request->get("code");
+    $state = $app->request->get("state");
+
+    $tokenURL = "https://login.eveonline.com/oauth/token";
+    $base64 = base64_encode($config["sso-token"]["clientID"] . ":" . $config["sso-token"]["secretKey"]);
+
+    $data = json_decode(sendData($tokenURL, array(
+        "grant_type" => "authorization_code",
+        "code" => $code
+    ), array("Authorization: Basic {$base64}")));
+
+    $accessToken = $data->access_token;
+	$refreshToken = $data->refresh_token;
+
+    // Verify Token
+    $verifyURL = "https://login.eveonline.com/oauth/verify";
+    $data = json_decode(sendData($verifyURL, array(), array("Authorization: Bearer {$accessToken}")));
+
+    $characterID = $data->CharacterID;
+	
+	$created = date('Y-m-d H:i:s');
+
+	insertToken($config["db"]["url"], $config["db"]["user"], $config["db"]["pass"], $config["db"]["dbname"], $characterID, $accessToken, $refreshToken, $created);
+
+    $app->render("authed-token.twig", array("accessToken" => $accessToken, "refreshToken" => $refreshToken));
 });
 
 $app->run();

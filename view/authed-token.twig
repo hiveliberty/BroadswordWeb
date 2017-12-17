@@ -49,11 +49,11 @@
         .jumbotron {
             text-align: center;
             border-bottom: 1px solid #e5e5e5;
+            color: #0D191D;
         }
         .jumbotron .btn {
             font-size: 21px;
             padding: 14px 24px;
-            color: #0D191D;
         }
         /* Supporting marketing content */
         .marketing {
@@ -78,26 +78,6 @@
                 border-bottom: 0;
             }
         }
-
-		/* .container {
-			display: flex;
-			width: 100%;
-			padding: 40px 0;
-			align-items: center;
-			justify-content: center;
-		} */
-
-		.container a {
-			background: #7289DA;
-			padding: 0 20px;
-			line-height: 35px;
-			color: #fff;
-			font-family: 'Helvetica', 'Arial', sans-sefir;
-			font-size: 20px;
-			display: block;
-			text-decoration: none;
-			border-radius: 3px;
-		}
     </style>
 </head>
 
@@ -108,8 +88,9 @@
     </div>
     <div class="jumbotron">
         <h1>Discord</h1>
-        <p class="lead">Click the button below to login with your Discord account.</p>
-        <p><a href="{{ discordURL }}">Login through Discord</a></p>
+        <p class="lead">Sign in complete.</p>
+        <p><b>accessToken: {{ accessToken }}</b></p>
+		<p><b>refreshToken: {{ refreshToken }}</b></p>
     </div>
 </div>
 <!-- /container -->
